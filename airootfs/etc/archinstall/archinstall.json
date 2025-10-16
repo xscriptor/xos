@@ -1,0 +1,57 @@
+{
+  "version": "2.8.0",
+  "archinstall-language": "English",
+  "hostname": "xos",
+  "bootloader": "grub",
+  "kernels": ["linux"],
+  "locale_config": {
+    "kb_layout": "es",
+    "sys_lang": "es_ES",
+    "sys_enc": "UTF-8"
+  },
+  "timezone": "Europe/Madrid",
+  "ntp": true,
+
+  "profile_config": {
+    "profile": "gnome"
+  },
+
+  "packages": [
+    "gnome-tweaks",
+    "papirus-icon-theme",
+    "starship",
+    "zsh",
+    "code",
+    "helix",
+    "zellij",
+    "yazi",
+    "docker",
+    "docker-compose",
+    "nodejs",
+    "npm",
+    "pnpm",
+    "kitty",
+    "networkmanager"
+  ],
+
+  "disk_config": {
+    "config_type": "default_layout",
+    "device_modifications": [
+      {
+        "device": "/dev/sda",
+        "wipe": true
+      }
+    ]
+  },
+
+  "custom_commands": [
+    "systemctl enable gdm.service",
+    "systemctl enable NetworkManager.service"
+  ],
+
+  "swap": true,
+  "script": "guided",
+  "silent": false,
+  "offline": false,
+  "no_pkg_lookups": false
+}

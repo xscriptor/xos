@@ -1,0 +1,10 @@
+layout {
+  pane split_direction="horizontal" {
+    pane command="helix" {
+      args "."
+      size "80%"
+    }
+    pane command="zsh" {
+    }
+  }
+}

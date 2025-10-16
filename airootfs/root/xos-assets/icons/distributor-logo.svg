@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo exterior (rosa Xscriptor) -->
+  <rect x="0" y="0" width="1024" height="1024" fill="#FF4C8B"/>
+  <!-- Placa oscura con esquinas redondeadas -->
+  <rect x="64" y="64" width="896" height="896" rx="140" fill="#1F2937"/>
+  
+  <!-- Gran X amarilla -->
+  <line x1="220" y1="220" x2="804" y2="804"
+        stroke="#FFD84C" stroke-width="140" stroke-linecap="round"/>
+  <line x1="804" y1="220" x2="220" y2="804"
+        stroke="#FFD84C" stroke-width="140" stroke-linecap="round"/>
+
+  <!-- Prompt ">_" en verde menta -->
+  <!-- ">" -->
+  <polyline points="260,470 330,430 260,390"
+            fill="none" stroke="#00FFA8" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- "_" -->
+  <rect x="250" y="505" width="140" height="24" rx="12" fill="#00FFA8"/>
+
+  <!-- "#"" en violeta -->
+  <!-- barras verticales -->
+  <line x1="750" y1="360" x2="750" y2="560" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
+  <line x1="820" y1="360" x2="820" y2="560" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
+  <!-- barras horizontales -->
+  <line x1="710" y1="410" x2="860" y2="410" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
+  <line x1="710" y1="510" x2="860" y2="510" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,105 @@
+# ────────────────────────────────────────────────
+# XOs Linux — .gitignore para build ArchISO
+# ────────────────────────────────────────────────
+
+# ── Directorios de build ─────────────────────────
+work/
+out/
+iso/
+*.iso
+*.img
+*.sfs
+*.squashfs
+*.tar
+*.tar.*
+*.cpio
+*.fsimage
+
+# ── Logs ─────────────────────────────────────────
+build-*.log
+mkarchiso.log
+*.log
+
+# ── Cachés del sistema ───────────────────────────
+.cache/
+.tmp/
+*.tmp
+*.bak
+*.old
+*~
+
+# ── Archiso runtime / rootfs ─────────────────────
+airootfs/var/cache/pacman/pkg/
+airootfs/var/lib/pacman/sync/
+airootfs/var/log/
+airootfs/tmp/
+airootfs/home/*/.cache/
+airootfs/home/*/.local/share/Trash/
+airootfs/etc/machine-id
+airootfs/root/.bash_history
+airootfs/root/.local/share/recently-used.xbel
+airootfs/root/.cache/
+
+# ── Archiso montaje / desmontaje ─────────────────
+mnt/
+proc/
+sys/
+dev/
+run/
+
+# ── Archivos sensibles ───────────────────────────
+.env
+.env.local
+.envrc
+*.key
+*.pem
+*.crt
+*.sig
+*.secret
+id_rsa*
+id_ed25519*
+
+# ── Edición y herramientas ───────────────────────
+.vscode/
+.idea/
+*.code-workspace
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+node_modules/
+dist/
+build/
+
+# ── Archivos locales de usuario ──────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Exclusiones específicas de XOs ───────────────
+# Todo lo de rebranding se mantiene
+!root/xos-assets/**
+!root/xos-assets/**/*.sh
+!root/xos-assets/**/*.svg
+!root/xos-assets/**/*.png
+!root/xos-assets/**/*.conf
+!root/xos-assets/**/*.service
+
+# Archivos del perfil ArchISO
+!profiledef.sh
+!pacman.conf
+!packages.x86_64
+!efiboot/
+!syslinux/
+!airootfs/**
+
+# Mantener scripts y documentación
+!*.sh
+!*.md
+!LICENSE
+!Makefile
+!Dockerfile
+
+# ────────────────────────────────────────────────
+# Fin del archivo
+# ────────────────────────────────────────────────

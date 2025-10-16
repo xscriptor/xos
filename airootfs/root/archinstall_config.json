@@ -1,0 +1,6 @@
+{
+  "profile": {
+    "name": "gnome",
+    "packages": ["gnome-tweaks", "papirus-icon-theme"]
+  }
+}
