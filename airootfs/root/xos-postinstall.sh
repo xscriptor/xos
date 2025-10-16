@@ -187,6 +187,7 @@ arch-chroot /mnt sh -lc '
     kitty \
     curl \
     helix \
+    ptyxis \
     zellij \
     yazi \
     starship \
