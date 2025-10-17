@@ -1,21 +1,31 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-  
   "logo": {
-    "type": "builtin",
-    "source": "arch",
-    "width": 40,
-    "height": 15,
-    "padding": { "top": 0, "left": 2 },
-    "color": { "1": "blue" }
+    "type": "file",
+    "source": "~/.config/fastfetch/logo.txt",
+    "padding": { "top": 0, "left": 2, "right": 2 },
+    "color": {
+      "1": "#F7F1FF",
+      "2": "#D36CFF",
+      "3": "#D36CFF",
+      "4": "#D36CFF",
+      "5": "#D36CFF",
+      "6": "#D36CFF"
+    }
   },
-
-  "modules": [
-    {
-      "type": "custom",
-      "key": "Arch-X",
-      "value": "Arch Linux"
+  "display": {
+    "separator": ": ",
+    "color": {
+      "keys": "#D36CFF",
+      "title": "#F7F1FF",
+      "output": "#7FFFD4",
+      "separator": "#F7F1FF"
     },
+    "key": { "width": 14, "type": "string" }
+  },
+  "modules": [
+    { "type": "custom", "key": "Arch-X", "value": "Arch Linux" },
+    "os",
     "separator",
     "kernel",
     "uptime",
@@ -30,10 +40,6 @@
     "disk",
     "locale",
     "break",
-    {
-      "type": "colors",
-      "symbol": "circle",
-      "paddingLeft": 1
-    }
+    { "type": "colors", "symbol": "circle", "paddingLeft": 1 }
   ]
 }
