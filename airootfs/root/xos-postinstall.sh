@@ -196,6 +196,7 @@ arch-chroot /mnt sh -lc '
     pnpm \
     btop \
     fastfetch \
+    zsh \
     docker \
     docker-compose \
     base-devel \

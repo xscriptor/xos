@@ -1,28 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="128" height="128" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <!-- Fondo exterior (rosa Xscriptor) -->
-  <rect x="0" y="0" width="1024" height="1024" fill="#FF4C8B"/>
-  <!-- Placa oscura con esquinas redondeadas -->
-  <rect x="64" y="64" width="896" height="896" rx="140" fill="#1F2937"/>
-  
-  <!-- Gran X amarilla -->
-  <line x1="220" y1="220" x2="804" y2="804"
-        stroke="#FFD84C" stroke-width="140" stroke-linecap="round"/>
-  <line x1="804" y1="220" x2="220" y2="804"
-        stroke="#FFD84C" stroke-width="140" stroke-linecap="round"/>
+<svg width="128" height="128" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo X — EB Garamond con degradados Xscriptor">
+  <title>XOs Logo</title>
 
-  <!-- Prompt ">_" en verde menta -->
-  <!-- ">" -->
-  <polyline points="260,470 330,430 260,390"
-            fill="none" stroke="#00FFA8" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- "_" -->
-  <rect x="250" y="505" width="140" height="24" rx="12" fill="#00FFA8"/>
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="grad-a" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0"   stop-color="#5ad4e6"/>  <!-- blue -->
+      <stop offset="0.33" stop-color="#7bd88f"/> <!-- green -->
+      <stop offset="0.66" stop-color="#fce566"/> <!-- yellow -->
+      <stop offset="1"   stop-color="#fd9353"/>  <!-- orange -->
+    </linearGradient>
+    <linearGradient id="grad-b" x1="448" y1="64" x2="64" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0"   stop-color="#fc618d"/>  <!-- red -->
+      <stop offset="0.33" stop-color="#5ad4e6"/> <!-- blue -->
+      <stop offset="0.66" stop-color="#7bd88f"/> <!-- green -->
+      <stop offset="1"   stop-color="#fce566"/>  <!-- yellow -->
+    </linearGradient>
 
-  <!-- "#"" en violeta -->
-  <!-- barras verticales -->
-  <line x1="750" y1="360" x2="750" y2="560" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
-  <line x1="820" y1="360" x2="820" y2="560" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
-  <!-- barras horizontales -->
-  <line x1="710" y1="410" x2="860" y2="410" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
-  <line x1="710" y1="510" x2="860" y2="510" stroke="#D36CFF" stroke-width="40" stroke-linecap="round"/>
+    <!-- definition -->
+    <filter id="soft-outline" x="-5%" y="-5%" width="110%" height="110%">
+      <feMorphology operator="dilate" radius="0.5" in="SourceAlpha" result="dil"/>
+      <feGaussianBlur in="dil" stdDeviation="0.8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="0 0 0 0 0.41
+                0 0 0 0 0.40
+                0 0 0 0 0.42
+                0 0 0 0.35 0" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- leginbility -->
+  <g filter="url(#soft-outline)">
+    <!--  (↘)  -->
+    <path fill="url(#grad-a)" d="
+      M 96,118
+      C 112,108 134,104 150,110
+      C 168,116 188,132 214,162
+      C 242,195 268,228 294,262
+      C 312,285 326,304 338,321
+      C 352,341 366,357 387,371
+      C 408,385 430,391 450,388
+      C 444,399 433,410 419,419
+      C 397,433 370,438 346,430
+      C 320,420 297,399 274,370
+      C 255,345 237,321 220,299
+      C 206,280 192,262 179,247
+      C 158,222 139,205 119,194
+      C 106,187 92,184 79,186
+      C 91,170 95,148 96,118 Z
+    "/>
+
+    <!-- (↗)  -->
+    <path fill="url(#grad-b)" d="
+      M 416,118
+      C 400,108 378,104 362,110
+      C 344,116 324,132 298,162
+      C 270,195 244,228 218,262
+      C 200,285 186,304 174,321
+      C 160,341 146,357 125,371
+      C 104,385 82,391 62,388
+      C 68,399 79,410 93,419
+      C 115,433 142,438 166,430
+      C 192,420 215,399 238,370
+      C 257,345 275,321 292,299
+      C 306,280 320,262 333,247
+      C 354,222 373,205 393,194
+      C 406,187 420,184 433,186
+      C 421,170 417,148 416,118 Z
+    "/>
+
+    <!-- dot in the middle -->
+    <path fill="#f7f1ff" d="
+      M 256,238
+      C 268,244 278,254 278,266
+      C 278,278 268,288 256,294
+      C 244,288 234,278 234,266
+      C 234,254 244,244 256,238 Z
+    "/>
+  </g>
 </svg>
