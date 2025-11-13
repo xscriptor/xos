@@ -73,79 +73,140 @@ fi
 
 if [ -f "$CONF_PATH" ] && command -v jq >/dev/null 2>&1; then
   BIDX=$(jq -r '.disk_config.device_modifications[0].partitions | to_entries[] | select(.value.fs_type=="btrfs") | .key' "$CONF_PATH" | head -n1)
-  if [ -n "$BIDX" ]; then
-    ROOT_PCT=${XOS_ROOT_PERCENT:-100}
-    TMP=$(mktemp)
-    jq ".disk_config.device_modifications[0].partitions[$BIDX].size = {\"sector_size\": {\"unit\": \"B\", \"value\": 512}, \"unit\": \"Percent\", \"value\": $ROOT_PCT}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
-  fi
   FIDX=$(jq -r '.disk_config.device_modifications[0].partitions | to_entries[] | select(.value.fs_type=="fat32") | .key' "$CONF_PATH" | head -n1)
   if [ -n "$FIDX" ] && [ -n "${XOS_BOOT_SIZE_MIB:-}" ]; then
-    TMP=$(mktemp)
-    jq ".disk_config.device_modifications[0].partitions[$FIDX].size = {\"sector_size\": {\"unit\": \"B\", \"value\": 512}, \"unit\": \"MiB\", \"value\": ${XOS_BOOT_SIZE_MIB}}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
-  fi
-
-  if [ -n "$BIDX" ] && [ -n "$FIDX" ]; then
     BOOT_UNIT=$(jq -r ".disk_config.device_modifications[0].partitions[$FIDX].size.unit" "$CONF_PATH")
-    BOOT_VALUE=$(jq -r ".disk_config.device_modifications[0].partitions[$FIDX].size.value" "$CONF_PATH")
-    BOOT_MIB=$BOOT_VALUE
     case "$BOOT_UNIT" in
-      GiB|GIB|GiB) BOOT_MIB=$(( BOOT_VALUE * 1024 )) ;;
-      MiB|MIB|MiB) BOOT_MIB=$(( BOOT_VALUE )) ;;
-      B) BOOT_MIB=$(( BOOT_VALUE / 1048576 )) ;;
-      *) BOOT_MIB=$(( BOOT_VALUE )) ;;
+      MiB|MIB|MiB) NEW_BOOT_VAL=${XOS_BOOT_SIZE_MIB} ;;
+      GiB|GIB|GiB) NEW_BOOT_VAL=$(( XOS_BOOT_SIZE_MIB / 1024 )) ;;
+      B) NEW_BOOT_VAL=$(( XOS_BOOT_SIZE_MIB * 1048576 )) ;;
+      *) NEW_BOOT_VAL=${XOS_BOOT_SIZE_MIB} ;;
     esac
-    ROOT_START_MIB=$(( BOOT_MIB + 1 ))
     TMP=$(mktemp)
-    jq ".disk_config.device_modifications[0].partitions[$BIDX].start = {\"sector_size\": {\"unit\": \"B\", \"value\": 512}, \"unit\": \"MiB\", \"value\": ${ROOT_START_MIB}}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
+    jq ".disk_config.device_modifications[0].partitions[$FIDX].size.value = ${NEW_BOOT_VAL}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
+  fi
+  if [ -n "$BIDX" ]; then
+    BUNIT=$(jq -r ".disk_config.device_modifications[0].partitions[$BIDX].size.unit" "$CONF_PATH")
+    SUNIT=$(jq -r ".disk_config.device_modifications[0].partitions[$BIDX].start.unit" "$CONF_PATH")
+    SVAL=$(jq -r ".disk_config.device_modifications[0].partitions[$BIDX].start.value" "$CONF_PATH")
+    case "$SUNIT" in
+      MiB|MIB|MiB) START_BYTES=$(( SVAL * 1048576 )) ;;
+      GiB|GIB|GiB) START_BYTES=$(( SVAL * 1073741824 )) ;;
+      B) START_BYTES=$(( SVAL )) ;;
+      *) START_BYTES=$(( SVAL * 1048576 )) ;;
+    esac
+    if [ -n "$TARGET" ]; then
+      DISK_BYTES=$(blockdev --getsize64 "/dev/$TARGET" 2>/dev/null || echo 0)
+    else
+      DISK_BYTES=0
+    fi
+    if [ "$BUNIT" = "Percent" ]; then
+      if [ -n "${XOS_ROOT_PERCENT:-}" ]; then
+        TMP=$(mktemp)
+        jq ".disk_config.device_modifications[0].partitions[$BIDX].size.value = ${XOS_ROOT_PERCENT}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
+      fi
+    else
+      if [ "$DISK_BYTES" -gt 0 ]; then
+        REST_BYTES=$(( DISK_BYTES - START_BYTES ))
+        case "$BUNIT" in
+          B) NEW_SIZE_VAL=$REST_BYTES ;;
+          MiB|MIB|MiB) NEW_SIZE_VAL=$(( REST_BYTES / 1048576 )) ;;
+          GiB|GIB|GiB) NEW_SIZE_VAL=$(( REST_BYTES / 1073741824 )) ;;
+          *) NEW_SIZE_VAL=$(( REST_BYTES / 1048576 )) ;;
+        esac
+        TMP=$(mktemp)
+        jq ".disk_config.device_modifications[0].partitions[$BIDX].size.value = ${NEW_SIZE_VAL}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
+      fi
+    fi
+  fi
+  if [ -n "$BIDX" ] && [ -n "$FIDX" ] && [ -n "${XOS_BOOT_SIZE_MIB:-}" ]; then
+    BSTART_UNIT=$(jq -r ".disk_config.device_modifications[0].partitions[$BIDX].start.unit" "$CONF_PATH")
+    BOOT_UNIT=$(jq -r ".disk_config.device_modifications[0].partitions[$FIDX].size.unit" "$CONF_PATH")
+    BOOT_VAL=$(jq -r ".disk_config.device_modifications[0].partitions[$FIDX].size.value" "$CONF_PATH")
+    case "$BOOT_UNIT" in
+      GiB|GIB|GiB) BOOT_MIB=$(( BOOT_VAL * 1024 )) ;;
+      MiB|MIB|MiB) BOOT_MIB=$BOOT_VAL ;;
+      B) BOOT_MIB=$(( BOOT_VAL / 1048576 )) ;;
+      *) BOOT_MIB=$BOOT_VAL ;;
+    esac
+    NEW_START_MIB=$(( BOOT_MIB + 1 ))
+    case "$BSTART_UNIT" in
+      MiB|MIB|MiB) NEW_START_VAL=$NEW_START_MIB ;;
+      GiB|GIB|GiB) NEW_START_VAL=$(( NEW_START_MIB / 1024 )) ;;
+      B) NEW_START_VAL=$(( NEW_START_MIB * 1048576 )) ;;
+      *) NEW_START_VAL=$NEW_START_MIB ;;
+    esac
+    TMP=$(mktemp)
+    jq ".disk_config.device_modifications[0].partitions[$BIDX].start.value = ${NEW_START_VAL}" "$CONF_PATH" > "$TMP" && mv "$TMP" "$CONF_PATH"
   fi
 elif [ -f "$CONF_PATH" ]; then
-  python3 - "$CONF_PATH" "${XOS_ROOT_PERCENT:-100}" "${XOS_BOOT_SIZE_MIB:-}" << 'PY'
-import json,sys
+  python3 - "$CONF_PATH" "$TARGET" "${XOS_ROOT_PERCENT:-}" "${XOS_BOOT_SIZE_MIB:-}" << 'PY'
+import json,sys,subprocess
 path=sys.argv[1]
-root_pct=int(sys.argv[2])
-boot_mib_arg=sys.argv[3]
+target=sys.argv[2]
+root_pct=sys.argv[3]
+boot_mib_arg=sys.argv[4]
 with open(path,'r',encoding='utf-8') as f:
     data=json.load(f)
 dc=data.get('disk_config',{})
 mods=dc.get('device_modifications') or []
 if not mods:
-    print('NO_DEVICE_MODS')
     sys.exit(0)
 dm=mods[0]
 parts=dm.get('partitions',[])
 bidx=next((i for i,p in enumerate(parts) if p.get('fs_type')=='btrfs'), None)
 fidx=next((i for i,p in enumerate(parts) if p.get('fs_type')=='fat32'), None)
-if bidx is not None:
-    parts[bidx]['size']={"sector_size":{"unit":"B","value":512},"unit":"Percent","value":root_pct}
+def to_bytes(unit,val):
+    if unit in ('MiB','MIB','MiB'): return int(val)*1048576
+    if unit in ('GiB','GIB','GiB'): return int(val)*1073741824
+    return int(val)
+def from_bytes(unit,bytes_):
+    if unit in ('MiB','MIB','MiB'): return bytes_//1048576
+    if unit in ('GiB','GIB','GiB'): return bytes_//1073741824
+    return bytes_
 if fidx is not None and boot_mib_arg:
-    boot_mib=int(boot_mib_arg)
-    parts[fidx]['size']={"sector_size":{"unit":"B","value":512},"unit":"MiB","value":boot_mib}
-if bidx is not None and fidx is not None:
-    size=parts[fidx].get('size',{})
-    unit=size.get('unit')
-    val=int(size.get('value',0))
-    if unit in ('GiB','GIB','GiB'):
-        boot_mib=val*1024
-    elif unit in ('MiB','MIB','MiB'):
-        boot_mib=val
-    elif unit=='B':
-        boot_mib=val//1048576
+    u=parts[fidx]['size'].get('unit')
+    b_mib=int(boot_mib_arg)
+    if u in ('MiB','MIB','MiB'): parts[fidx]['size']['value']=b_mib
+    elif u in ('GiB','GIB','GiB'): parts[fidx]['size']['value']=b_mib//1024
+    elif u=='B': parts[fidx]['size']['value']=b_mib*1048576
+    else: parts[fidx]['size']['value']=b_mib
+if bidx is not None:
+    su=parts[bidx]['start'].get('unit')
+    sv=int(parts[bidx]['start'].get('value',0))
+    start_bytes=to_bytes(su,sv)
+    bu=parts[bidx]['size'].get('unit')
+    if bu=='Percent':
+        if root_pct: parts[bidx]['size']['value']=int(root_pct)
     else:
-        boot_mib=val
-    root_start_mib=boot_mib+1
-    parts[bidx]['start']={"sector_size":{"unit":"B","value":512},"unit":"MiB","value":root_start_mib}
-dm['partitions']=parts
-dc['device_modifications']=[dm]
-data['disk_config']=dc
+        disk_bytes=0
+        if target:
+            try:
+                disk_bytes=int(subprocess.check_output(['blockdev','--getsize64','/dev/'+target],text=True).strip())
+            except Exception:
+                disk_bytes=0
+        if disk_bytes>0:
+            rest_bytes=max(0,disk_bytes-start_bytes)
+            parts[bidx]['size']['value']=from_bytes(bu,rest_bytes)
+    if fidx is not None and boot_mib_arg:
+        fu=parts[fidx]['size'].get('unit')
+        fv=int(parts[fidx]['size'].get('value',0))
+        if fu in ('GiB','GIB','GiB'): boot_mib=fv*1024
+        elif fu in ('MiB','MIB','MiB'): boot_mib=fv
+        elif fu=='B': boot_mib=fv//1048576
+        else: boot_mib=fv
+        new_start_mib=boot_mib+1
+        if su in ('MiB','MIB','MiB'): parts[bidx]['start']['value']=new_start_mib
+        elif su in ('GiB','GIB','GiB'): parts[bidx]['start']['value']=new_start_mib//1024
+        elif su=='B': parts[bidx]['start']['value']=new_start_mib*1048576
+        else: parts[bidx]['start']['value']=new_start_mib
 with open(path,'w',encoding='utf-8') as f:
     json.dump(data,f,indent=4)
 PY
 fi
 
 INSTALL_OK=0
-RUN_CONFIG=0
-[ -f "$CONF_PATH" ] && [ -n "$TARGET" ] && RUN_CONFIG=1
-if [ "$RUN_CONFIG" = "1" ]; then
+if [ -f "$CONF_PATH" ]; then
   if [ -f "$CREDS_PATH" ]; then
     if archinstall --config "$CONF_PATH" --creds "$CREDS_PATH"; then INSTALL_OK=1; fi
   else
