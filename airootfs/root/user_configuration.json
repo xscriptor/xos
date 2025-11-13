@@ -62,19 +62,26 @@
         "partitions": [
           {
             "btrfs": [],
+            "dev_path": null,
             "flags": [
               "boot"
             ],
             "fs_type": "fat32",
             "size": {
-              "sector_size": null,
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
               "unit": "MiB",
               "value": 512
             },
             "mount_options": [],
             "mountpoint": "/boot",
             "start": {
-              "sector_size": null,
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
               "unit": "MiB",
               "value": 1
             },
@@ -109,10 +116,14 @@
                 "compress": true
               }
             ],
+            "dev_path": null,
             "flags": [],
             "fs_type": "btrfs",
             "size": {
-              "sector_size": null,
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
               "unit": "Percent",
               "value": 100
             },
@@ -121,7 +132,10 @@
             ],
             "mountpoint": null,
             "start": {
-              "sector_size": null,
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
               "unit": "MiB",
               "value": 513
             },

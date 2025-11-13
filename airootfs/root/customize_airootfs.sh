@@ -24,13 +24,16 @@ echo
 echo "→ Starting archinstall (Automated with config)…"
 echo
 
-CONF_PATH="/root/archinstall_config.json"
-CREDS_PATH="/root/user_credentials.json"
+CONF_PATH="./user_configuration.json"
+CREDS_PATH="./user_credentials.json"
+[ -f "$CONF_PATH" ] || CONF_PATH="/root/user_configuration.json"
+[ -f "$CREDS_PATH" ] || CREDS_PATH="/root/user_credentials.json"
 
 ISO_SRC=$(findmnt -n -o SOURCE /run/archiso/bootmnt 2>/dev/null || true)
 ISO_PK=""
 [ -n "$ISO_SRC" ] && ISO_PK=$(lsblk -no PKNAME "$ISO_SRC" 2>/dev/null | head -n1)
-CANDS=$(lsblk -dn -o NAME,TYPE | awk '$2=="disk"{print $1}')
+CANDS=$(lsblk -dn -o NAME,TYPE,RM | awk '$2=="disk" && $3=="0"{print $1}')
+MIN_SIZE=${XOS_MIN_SIZE_BYTES:-34359738368}
 BEST_EMPTY=""
 BEST_EMPTY_SIZE=0
 BEST_ANY=""
@@ -38,6 +41,7 @@ BEST_ANY_SIZE=0
 for n in $CANDS; do
   [ -n "$ISO_PK" ] && [ "$n" = "$ISO_PK" ] && continue
   SIZE=$(blockdev --getsize64 "/dev/$n" 2>/dev/null || echo 0)
+  [ "$SIZE" -lt "$MIN_SIZE" ] && continue
   PARTS=$(lsblk -n "/dev/$n" -o TYPE | grep -c '^part$' || true)
   [ "$SIZE" -gt "$BEST_ANY_SIZE" ] && BEST_ANY="$n" && BEST_ANY_SIZE="$SIZE"
   if [ "$PARTS" -eq 0 ] && [ "$SIZE" -gt "$BEST_EMPTY_SIZE" ]; then
@@ -46,6 +50,17 @@ for n in $CANDS; do
   fi
 done
 TARGET="${BEST_EMPTY:-$BEST_ANY}"
+if [ -n "${XOS_TARGET_DEVICE:-}" ]; then
+  case "${XOS_TARGET_DEVICE}" in
+    /dev/*) TARGET="${XOS_TARGET_DEVICE#/dev/}" ;;
+    *) TARGET="${XOS_TARGET_DEVICE}" ;;
+  esac
+fi
+if [ -n "$TARGET" ]; then
+  echo "[XOs] Target disk selected: /dev/$TARGET"
+else
+  echo "[XOs] No suitable target disk found, falling back to interactive Archinstall."
+fi
 if [ -n "$TARGET" ] && [ -f "$CONF_PATH" ]; then
   DEV="/dev/$TARGET"
   if command -v jq >/dev/null 2>&1; then
@@ -70,4 +85,8 @@ fi
 # Postinstall (branding del sistema instalado)
 if [ "$INSTALL_OK" = "1" ] && [ -f /root/xos-postinstall.sh ]; then
   bash /root/xos-postinstall.sh || true
+else
+  if [ "$INSTALL_OK" != "1" ]; then
+    echo "[XOs] Archinstall failed. Check /var/log/archinstall/install.log for details." || true
+  fi
 fi
