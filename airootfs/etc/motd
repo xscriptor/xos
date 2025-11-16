@@ -19,10 +19,10 @@ Base system:
 Arch Linux, customized through archiso framework.
 
 Description:
-This ISO provides the live environment installer
+This ISO provides the live environment installer for XOs.
 
 Report issues:
-https://github.com/xscriptordev/XOs-ISO
+https://github.com/xscriptor/xos
 
 --------------------------------------------
 Welcome to XOs — Live environment starting now...
