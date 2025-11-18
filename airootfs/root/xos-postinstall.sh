@@ -242,4 +242,56 @@ fi
 install -d -m 0755 /mnt/etc/skel/.config
 rsync -avh /root/xos-assets/skel/.config/ /mnt/etc/skel/.config/
 
+echo "[XOs] Installing first boot customization service..."
+arch-chroot /mnt sh -lc '
+  set -eu
+  install -d -m 0755 /usr/local/sbin
+  cat > /usr/local/sbin/xos-firstboot.sh << "EOS"
+#!/bin/sh
+set -eu
+# Inform the user on first boot
+echo "──────────────────────────────────────────"
+echo "The system is finalizing its configuration."
+echo "Do not close this window until it finishes."
+echo "Log in if necessary to allow networking."
+echo "When it completes, reboot to apply the last changes."
+echo "──────────────────────────────────────────"
+STATE="/var/lib/xos/firstboot.done"
+mkdir -p /var/lib/xos
+[ -f "$STATE" ] && exit 0
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl --quiet is-active network-online.target || systemctl --wait is-active network-online.target || true
+fi
+i=0
+until curl -fsSL -o /dev/null https://raw.githubusercontent.com/xscriptor/X/main/x/x.sh; do
+  i=$((i+1))
+  [ "$i" -ge 30 ] && break
+  sleep 2
+done
+cd /root 2>/dev/null || cd /tmp
+curl -sLO https://raw.githubusercontent.com/xscriptor/X/main/x/x.sh || exit 0
+chmod +x x.sh || true
+./x.sh || true
+touch "$STATE"
+exit 0
+EOS
+  chmod 0755 /usr/local/sbin/xos-firstboot.sh
+  install -d -m 0755 /etc/systemd/system
+  cat > /etc/systemd/system/xos-firstboot.service << "EOS"
+[Unit]
+Description=XOs first boot customization
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=!/var/lib/xos/firstboot.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/xos-firstboot.sh
+
+[Install]
+WantedBy=multi-user.target
+EOS
+  systemctl enable xos-firstboot.service || true
+'
+
 
