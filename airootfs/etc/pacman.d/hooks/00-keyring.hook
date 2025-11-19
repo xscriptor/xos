@@ -1,5 +1,4 @@
-[
-Trigger]
+[Trigger]
 Operation = Install
 Operation = Upgrade
 Type = Package
@@ -8,4 +7,4 @@ Target = archlinux-keyring
 [Action]
 Description = Initialize and populate pacman keyring
 When = PreTransaction
-Exec = /usr/bin/bash -c 'pacman-key --init && pacman-key --populate archlinux'
+Exec = /usr/bin/bash -c '[ -d /etc/pacman.d/gnupg ] || install -d -m 700 -o root -g root /etc/pacman.d/gnupg; /usr/bin/pacman-key --init; /usr/bin/pacman-key --populate archlinux'
